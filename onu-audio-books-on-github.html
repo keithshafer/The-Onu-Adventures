@@ -46,8 +46,9 @@
             margin: 0;
         }
 
-        .audio-controls audio {
-            width: 200px;
+        .audio-controls {
+            height: 30px; 
+            padding-top: 10px;
         }
 
         /* Scrollable song list container */
@@ -87,18 +88,17 @@
                 <img id="album-cover" src="images/Dezsma.png" alt="Album Art" class="album-art">
             </div>
 
-            <div class="track-info">
-                <p id="currentTrackTitle"  class="track-title">Now Playing: Song Title</p>
-            </div>
 
             <div>
-                <audio id="audioPlayer" controls>
-                    <source src="" type="audio/mpeg">
-                    Your browser does not support the audio element.
-                </audio>
+                <div class="track-info" style="text-align: center">
+                    <p style="font-style:italic; color:lightgray;" id="currentTrackTitle"  class="track-title">Now Playing: Song Title</p>
+                    <audio class="audio-controls" id="audioPlayer" controls>
+                        <source src="" type="audio/mpeg">
+                        Your browser does not support the audio element.
+                    </audio>          
+                </div>
             </div>
 
-            <div>&nbsp;&nbsp;</div>
         </header>
     
         <!-- Scrollable content area for the song list -->
@@ -108,7 +108,7 @@
             </ul>
         </main>
         <div>
-            <p align="center"><br><br>Click to load different audiobook:<br><br>
+            <p style="text-align: center"><br><br>Click to load different audiobook:<br><br>
                 <button onclick="loadDezsma()">Dezsma</button>&nbsp;&nbsp;
                 <button onclick="loadBolmek()">Bolmek</button>&nbsp;&nbsp;
                 <button onclick="loadVerdekt()">Verdekt</button>
@@ -229,6 +229,7 @@
                 listItem.style.backgroundColor = color;
             }
         }
+
 
         function loadTrack(index) {
             const track                   = current_playlist[index];
