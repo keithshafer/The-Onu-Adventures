@@ -1,0 +1,340 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Onu audiobooks on GitHub</title>
+
+
+    <style>
+        /* General styling for full-page layout */
+        html, body {
+            margin: 0;
+            padding: 0;
+            height: 100%;
+            font-family: sans-serif;
+        }
+
+        /* Updated header styling for a fixed position */
+        .player-header {
+            position: fixed;  /* Fixes the header to the viewport */
+            top: 0;           /* Aligns the header with the top of the viewport */
+            width: 100%;      /* Ensures the header spans the full width */
+            z-index: 1000;    /* Keeps the header on top of other content*/
+            padding: 10px;
+            background-color: #333;
+            color: #fff;
+            display: flex;
+            align-items: center;
+            gap: 15px;
+            height: 80px;
+        }
+
+        .album-art {
+            width: 90px;
+            height: 90px;
+            border-radius: 5px;
+        }
+
+        .track-info {
+            flex-grow: 1;
+        }
+
+        .track-title {
+            font-weight: bold;
+            font-size: 100%;
+            margin: 0;
+        }
+
+        .audio-controls audio {
+            width: 200px;
+        }
+
+        /* Scrollable song list container */
+        .song-list-container {
+            /* Add a top margin to prevent content from hiding behind the fixed header */
+            margin-top: 100px; /* Adjust this value to be greater than the header's height */
+            overflow-y: auto;
+            background-color: #f4f4f4;
+            padding: 10px;
+        }
+
+        .song-list {
+            list-style: none;
+            padding: 0;
+            margin: 0;
+        }
+
+        .song-item {
+            padding: 10px;
+            border-bottom: 1px solid #ddd;
+        }
+
+        .song-item:hover {
+            background-color: #e9e9e9;
+            cursor: pointer;
+        }
+
+    </style>
+
+</head>
+<body>
+
+    <div class="page-container">
+        <!-- Fixed-size header for the audio player -->
+        <header class="player-header">
+            <div>
+                <img id="album-cover" src="images/Dezsma.png" alt="Album Art" class="album-art">
+            </div>
+
+            <div class="track-info">
+                <p id="currentTrackTitle"  class="track-title">Now Playing: Song Title</p>
+            </div>
+
+            <div>
+                <audio id="audioPlayer" controls>
+                    <source src="" type="audio/mpeg">
+                    Your browser does not support the audio element.
+                </audio>
+            </div>
+
+            <div>&nbsp;&nbsp;</div>
+        </header>
+    
+        <!-- Scrollable content area for the song list -->
+        <main class="song-list-container">
+            <ul id="playlist" class="song-list">
+                <!-- Playlist items will be dynamically added here by JavaScript -->
+            </ul>
+        </main>
+        <div>
+            <p align="center"><br><br>Click to load different audiobook:<br><br>
+                <button onclick="loadDezsma()">Dezsma</button>&nbsp;&nbsp;
+                <button onclick="loadBolmek()">Bolmek</button>&nbsp;&nbsp;
+                <button onclick="loadVerdekt()">Verdekt</button>
+            </p>
+            <p>&nbsp;</p>
+            <hr>
+            <p style="color: gray;  text-align: center">Additional availability options on <a href="https://keithshafer.blogspot.com/2021/03/dezsma.html">blog</a></p>
+            <p>&nbsp;</p>
+        </div>
+
+    </div>
+
+
+    <script>
+        const audioPlayer        = document.getElementById('audioPlayer');
+        const currentTrackTitle  = document.getElementById('currentTrackTitle');
+        const currentTrackArtist = document.getElementById('currentTrackArtist');
+        const playlistElement    = document.getElementById('playlist');
+        const albumCover         = document.getElementById('album-cover');
+
+
+        const dezsma_playlist = [ 
+            { title: 'Title and Author',                     src: 'MP3 Recordings/Keith Shafer - Dezsma/01 - Title and Author.mp3' },
+            { title: 'Dedication and Acknowledgements',      src: 'MP3 Recordings/Keith Shafer - Dezsma/02 - Dedication and Acknowledgements.mp3' },
+            { title: '00  –  Prologue',                      src: 'MP3 Recordings/Keith Shafer - Dezsma/03 - Chapter 00   (Prologue).mp3' },
+            { title: '01  –  Kat Burglar',                   src: 'MP3 Recordings/Keith Shafer - Dezsma/04 - Chapter 01   (Kat Burglar).mp3' },
+            { title: '02  –  First Contact',                 src: 'MP3 Recordings/Keith Shafer - Dezsma/05 - Chapter 02   (First Contact).mp3' },
+            { title: '03  –  Parched Salmon',                src: 'MP3 Recordings/Keith Shafer - Dezsma/06 - Chapter 03   (Parched Salmon).mp3' },
+            { title: '04  –  Broken Seal',                   src: 'MP3 Recordings/Keith Shafer - Dezsma/07 - Chapter 04   (Broken Seal).mp3' },
+            { title: '05  –  Market Time',                   src: 'MP3 Recordings/Keith Shafer - Dezsma/08 - Chapter 05   (Market Time).mp3' },
+            { title: '06  –  The Healer',                    src: 'MP3 Recordings/Keith Shafer - Dezsma/09 - Chapter 06   (The Healer).mp3' },
+            { title: '07  –  The Opening',                   src: 'MP3 Recordings/Keith Shafer - Dezsma/10 - Chapter 07   (The Opening).mp3' },
+            { title: '08  –  Day 131',                       src: 'MP3 Recordings/Keith Shafer - Dezsma/11 - Chapter 08   (Day 131).mp3' },
+            { title: '09  –  The Sending',                   src: 'MP3 Recordings/Keith Shafer - Dezsma/12 - Chapter 09   (The Sending).mp3' },
+            { title: '10  –  Reality Check',                 src: 'MP3 Recordings/Keith Shafer - Dezsma/13 - Chapter 10   (Reality Check).mp3' },
+            { title: '11  –  Party Crasher  (Part1)',        src: 'MP3 Recordings/Keith Shafer - Dezsma/14a - Chapter 11   (Party Crasher   Part1).mp3' },
+            { title: '11  –  Party Crasher  (Part2)',        src: 'MP3 Recordings/Keith Shafer - Dezsma/14b - Chapter 11   (Party Crasher   Part2).mp3' },
+            { title: '12  –  Showtime  (Part1)',             src: 'MP3 Recordings/Keith Shafer - Dezsma/15a - Chapter 12   (Showtime   Part1).mp3' },
+            { title: '12  –  Showtime  (Part2)',             src: 'MP3 Recordings/Keith Shafer - Dezsma/15b - Chapter 12   (Showtime   Part2).mp3' },
+            { title: '13  –  Attack Formation',              src: 'MP3 Recordings/Keith Shafer - Dezsma/16 - Chapter 13   (Attack Formation).mp3' },
+            { title: '14  –  Knight Moves',                  src: 'MP3 Recordings/Keith Shafer - Dezsma/17 - Chapter 14   (Knight Moves).mp3' },
+            { title: '15  –  Epilogue',                      src: 'MP3 Recordings/Keith Shafer - Dezsma/18 - Chapter 15   (Epilogue).mp3' },
+            { title: 'THE END and end credits',              src: 'MP3 Recordings/Keith Shafer - Dezsma/19 - THE END and end credits.mp3' }
+        ];
+
+        const bolmek_playlist = [ 
+            { title: 'Title and Author',                     src: 'MP3 Recordings/Keith Shafer - Bolmek/01 - Title and Author.mp3' },
+            { title: 'Dedication and Acknowledgements',      src: 'MP3 Recordings/Keith Shafer - Bolmek/02 - Dedication and Acknowledgements.mp3' },
+            { title: '00  –  Prologue',                      src: 'MP3 Recordings/Keith Shafer - Bolmek/03 - CH00   (Prologue).mp3' },
+            { title: '01  –  Crash Landing  (Part1)',        src: 'MP3 Recordings/Keith Shafer - Bolmek/04a - CH01   (Crash Landing   Part1).mp3' },
+            { title: '01  –  Crash Landing  (Part2)',        src: 'MP3 Recordings/Keith Shafer - Bolmek/04b - CH01   (Crash Landing   Part2).mp3' },
+            { title: '02  –  Wounded Warrior  (Part1)',      src: 'MP3 Recordings/Keith Shafer - Bolmek/05a - CH02   (Wounded Warrior   Part1).mp3' },
+            { title: '02  –  Wounded Warrior  (Part2)',      src: 'MP3 Recordings/Keith Shafer - Bolmek/05b - CH02   (Wounded Warrior   Part2).mp3' },
+            { title: '03  –  Light Touch  (Part1)',          src: 'MP3 Recordings/Keith Shafer - Bolmek/06a - CH03   (Light Touch   Part1).mp3' },
+            { title: '03  –  Light Touch  (Part2)',          src: 'MP3 Recordings/Keith Shafer - Bolmek/06b - CH03   (Light Touch   Part2).mp3' },
+            { title: '03  –  Light Touch  (Part3)',          src: 'MP3 Recordings/Keith Shafer - Bolmek/06c - CH03   (Light Touch   Part3).mp3' },
+            { title: '04  –  The Exchange  (Part1)',         src: 'MP3 Recordings/Keith Shafer - Bolmek/07a - CH04   (The Exchange   Part1).mp3' },
+            { title: '04  –  The Exchange  (Part2)',         src: 'MP3 Recordings/Keith Shafer - Bolmek/07b - CH04   (The Exchange   Part2).mp3' },
+            { title: '05  –  Perspective  (Part1)',          src: 'MP3 Recordings/Keith Shafer - Bolmek/08a - CH05   (Perspective   Part1).mp3' },
+            { title: '05  –  Perspective  (Part2)',          src: 'MP3 Recordings/Keith Shafer - Bolmek/08b - CH05   (Perspective   Part2).mp3' },
+            { title: '06  –  Dinner Guest  (Part1)',         src: 'MP3 Recordings/Keith Shafer - Bolmek/09a - CH06   (Dinner Guest   Part1).mp3' },
+            { title: '06  –  Dinner Guest  (Part2)',         src: 'MP3 Recordings/Keith Shafer - Bolmek/09b - CH06   (Dinner Guest   Part2).mp3' },
+            { title: '07  –  The Escort  (Part1)',           src: 'MP3 Recordings/Keith Shafer - Bolmek/10a - CH07   (The Escort   Part1).mp3' },
+            { title: '07  –  The Escort  (Part2)',           src: 'MP3 Recordings/Keith Shafer - Bolmek/10b - CH07   (The Escort   Part2).mp3' },
+            { title: '08  –  Second Thoughts',               src: 'MP3 Recordings/Keith Shafer - Bolmek/11 - CH08   (Second Thoughts).mp3' },
+            { title: '09  –  One More',                      src: 'MP3 Recordings/Keith Shafer - Bolmek/12 - CH09   (One More).mp3' },
+            { title: '10  –  The Rescue',                    src: 'MP3 Recordings/Keith Shafer - Bolmek/13 - CH10   (The Rescue).mp3' },
+            { title: '11  –  The Message',                   src: 'MP3 Recordings/Keith Shafer - Bolmek/14 - CH11   (The Message).mp3' },
+            { title: '12  –  The Delay',                     src: 'MP3 Recordings/Keith Shafer - Bolmek/15 - CH12   (The Delay).mp3' },
+            { title: '13  –  Motivation',                    src: 'MP3 Recordings/Keith Shafer - Bolmek/16 - CH13   (Motivation).mp3' },
+            { title: '14  –  The Reaction',                  src: 'MP3 Recordings/Keith Shafer - Bolmek/17 - CH14   (The Reaction).mp3' },
+            { title: '15  –  The Priority',                  src: 'MP3 Recordings/Keith Shafer - Bolmek/18 - CH15   (The Priority).mp3' },
+            { title: '16  –  The Buffer',                    src: 'MP3 Recordings/Keith Shafer - Bolmek/19 - CH16   (The Buffer).mp3' },
+            { title: '17  –  King Time',                     src: 'MP3 Recordings/Keith Shafer - Bolmek/20 - CH17   (King Time).mp3' },
+            { title: '18  –  Toast',                         src: 'MP3 Recordings/Keith Shafer - Bolmek/21 - CH18   (Toast).mp3' },
+            { title: '19  –  Epilogue',                      src: 'MP3 Recordings/Keith Shafer - Bolmek/22 - CH19   (Epilogue).mp3' },
+            { title: "Author's Endnote",                     src: "MP3 Recordings/Keith Shafer - Bolmek/23 - Author's Endnote.mp3" },
+            { title: 'THE END and end credits',              src: 'MP3 Recordings/Keith Shafer - Bolmek/24 - THE END and end credits.mp3' }
+        ];
+
+        const verdekt_playlist = [ 
+            { title: 'Title and Author',                     src: 'MP3 Recordings/Keith Shafer - Verdekt/01 - Title and Author.mp3' },
+            { title: 'Dedication and Acknowledgements',      src: 'MP3 Recordings/Keith Shafer - Verdekt/02 - Dedication and Acknowledgements.mp3' },
+            { title: '00  –  Prologue',                      src: 'MP3 Recordings/Keith Shafer - Verdekt/03 - CH00   (Prologue).mp3' },
+            { title: '01  –  Empty Handed',                  src: 'MP3 Recordings/Keith Shafer - Verdekt/04 - CH01   (Empty Handed).mp3' },
+            { title: "02  –  Pebble's Edge  (Part1)",        src: "MP3 Recordings/Keith Shafer - Verdekt/05a - CH02   (Pebble's Edge   Part1).mp3" },
+            { title: "02  –  Pebble's Edge  (Part2)",        src: "MP3 Recordings/Keith Shafer - Verdekt/05b - CH02   (Pebble's Edge   Part2).mp3" },
+            { title: '03  –  Carried Away',                  src: 'MP3 Recordings/Keith Shafer - Verdekt/06 - CH03   (Carried Away).mp3' },
+            { title: '04  –  Foreign Assignment  (Part1)',   src: 'MP3 Recordings/Keith Shafer - Verdekt/07a - CH04   (Foreign Assignment   Part1).mp3' },
+            { title: '04  –  Foreign Assignment  (Part2)',   src: 'MP3 Recordings/Keith Shafer - Verdekt/07b - CH04   (Foreign Assignment   Part2).mp3' },
+            { title: '04  –  Foreign Assignment  (Part3)',   src: 'MP3 Recordings/Keith Shafer - Verdekt/07c - CH04   (Foreign Assignment   Part3).mp3' },
+            { title: '05  –  The Guard',                     src: 'MP3 Recordings/Keith Shafer - Verdekt/08 - CH05   (The Guard).mp3' },
+            { title: '06  –  Trading Places  (Part1)',       src: 'MP3 Recordings/Keith Shafer - Verdekt/09a - CH06   (Trading Places   Part1).mp3' },
+            { title: '06  –  Trading Places  (Part2)',       src: 'MP3 Recordings/Keith Shafer - Verdekt/09b - CH06   (Trading Places   Part2).mp3' },
+            { title: '07  –  Second Nature',                 src: 'MP3 Recordings/Keith Shafer - Verdekt/10 - CH07   (Second Nature).mp3' },
+            { title: '08  –  The Keeper',                    src: 'MP3 Recordings/Keith Shafer - Verdekt/11 - CH08   (The Keeper).mp3' },
+            { title: '09  –  Course Correction  (Part1)',    src: 'MP3 Recordings/Keith Shafer - Verdekt/12a - CH09   (Course Correction   Part1).mp3' },
+            { title: '09  –  Course Correction  (Part2)',    src: 'MP3 Recordings/Keith Shafer - Verdekt/12b - CH09   (Course Correction   Part2).mp3' },
+            { title: '10  –  False Alarm',                   src: 'MP3 Recordings/Keith Shafer - Verdekt/13 - CH10   (False Alarm).mp3' },
+            { title: '11  –  Family Business  (Part1)',      src: 'MP3 Recordings/Keith Shafer - Verdekt/14a - CH11   (Family Business   Part1).mp3' },
+            { title: '11  –  Family Business  (Part2)',      src: 'MP3 Recordings/Keith Shafer - Verdekt/14b - CH11   (Family Business   Part2).mp3' },
+            { title: '12  –  The Trade',                     src: 'MP3 Recordings/Keith Shafer - Verdekt/15 - CH12   (The Trade).mp3' },
+            { title: '13  –  Toba Bound  (Part1)',           src: 'MP3 Recordings/Keith Shafer - Verdekt/16a - CH13   (Toba Bound   Part1).mp3' },
+            { title: '13  –  Toba Bound  (Part2)',           src: 'MP3 Recordings/Keith Shafer - Verdekt/16b - CH13   (Toba Bound   Part2).mp3' },
+            { title: '14  –  The Release',                   src: 'MP3 Recordings/Keith Shafer - Verdekt/17 - CH14   (The Release).mp3' },
+            { title: 'THE END and end credits',              src: 'MP3 Recordings/Keith Shafer - Verdekt/18 - THE END and end credits.mp3' }
+        ];
+
+
+
+        let current_playlist  = dezsma_playlist;
+        let currentTrackIndex = 0;
+
+
+        function setLiItemBackroundColor(index, color) {
+            const listItem = document.querySelector(`#playlist li:nth-child(${index + 1})`);
+            if (listItem) {
+                listItem.style.backgroundColor = color;
+            }
+        }
+
+        function loadTrack(index) {
+            const track                   = current_playlist[index];
+            audioPlayer.src               = track.src;
+            currentTrackTitle.textContent = track.title;
+
+            // Highlight the currently playing track in the playlist
+            setLiItemBackroundColor(currentTrackIndex, '#f4f4f4'); // Reset previous track color
+            setLiItemBackroundColor(index, 'yellow'); // Highlight
+            currentTrackIndex             = index;
+            audioPlayer.load();           
+        }
+
+
+        function playTrack() {
+            audioPlayer.play();
+        }
+
+
+        function nextTrack() {
+            const temp = (currentTrackIndex + 1) % current_playlist.length;
+            if (temp === 0) { // If we've reached the end of the playlist, stop playback
+                audioPlayer.pause();
+                audioPlayer.currentTime = 0;
+                return;
+            } else {
+                loadTrack(temp);
+                playTrack();
+            };
+
+        }
+
+        // Event listener for when a song ends
+        audioPlayer.addEventListener('ended', nextTrack);
+
+
+        function loadPlaylist() {
+            current_playlist.forEach((track, index) => {
+                const listItem        = document.createElement('li');
+                listItem.className    = 'song-item';
+                listItem.textContent  = `${track.title}`;
+                listItem.addEventListener('click', () => {
+                    setLiItemBackroundColor(currentTrackIndex, '#f4f4f4'); // Reset previous track color
+                    currentTrackIndex = index;
+                    loadTrack(currentTrackIndex);
+                    playTrack();
+                });
+                playlistElement.appendChild(listItem);
+            });
+        }
+
+
+        function reloadPlaylist(the_list) {
+            playlistElement.innerHTML = ''; // Clear existing playlist
+            current_playlist          = the_list;
+            loadPlaylist();
+            currentTrackIndex         = 0;
+            loadTrack(currentTrackIndex);
+            window.scrollTo(0, 0);
+        }
+
+
+        function loadDezsma() {
+            reloadPlaylist(dezsma_playlist);
+            albumCover.src = "images/Dezsma.png";
+        }
+
+        function loadBolmek() {
+            reloadPlaylist(bolmek_playlist);
+            albumCover.src = "images/Bolmek.jpg";
+
+        }
+
+        function loadVerdekt() {
+            reloadPlaylist(verdekt_playlist);
+            albumCover.src = "images/Verdekt.jpg";
+        }
+
+
+        window.scrollTo({
+            top: 0,
+            left: 0,
+            behavior: 'smooth'
+        });
+
+
+
+        const queryString = window.location.search;
+        const urlParams   = new URLSearchParams(queryString);
+        const paramValue  = urlParams.get('book');
+
+        if (paramValue === "Bolmek") {
+            loadBolmek();
+        } else if (paramValue === "Verdekt") {
+            loadVerdekt();
+        } else {
+            loadDezsma();
+        }
+
+        document.getElementById("output2").innerHTML = paramValue; // Displays the value
+
+
+    </script>
+
+    </body>
+
+
+</body>
+</html>
